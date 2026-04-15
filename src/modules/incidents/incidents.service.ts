@@ -3,10 +3,46 @@ import { Incident, TypeStatus } from './schemas/incident.schema';
 import { CreateIncidentDto } from './dto/create-incident.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { UpdateIncidentDto } from './dto/update-incident.dto';
 
 @Injectable()
 export class IncidentsService {
     constructor(@InjectModel(Incident.name) private incidentModel: Model<Incident>) {}
+
+    async findAll(): Promise<Incident[]> {
+        // ".populate()" permet de remplacer les IDs MongoDB par les vraies infos des utilisateurs !
+        return this.incidentModel.find().populate('client', 'nom prenom email role').populate('ingenieur', 'nom prenom email role').exec();
+    }
+
+    async findOne(id: string): Promise<Incident> {
+        const incident = await this.incidentModel
+            .findById(id)
+            .populate('client', 'nom prenom email role')
+            .populate('ingenieur', 'nom prenom email role')
+            .exec();
+
+        if (!incident) {
+            throw new NotFoundException(`Incident avec l'ID ${id} non trouvé`);
+        }
+
+        return incident;
+    }
+
+    async update(id: string, updateIncidentDto: UpdateIncidentDto): Promise<Incident> {
+        const incident = await this.incidentModel
+            .findByIdAndUpdate(
+                id,
+                { $set: updateIncidentDto },
+                { new: true }, // Renvoie le document après modification
+            )
+            .exec();
+
+        if (!incident) {
+            throw new NotFoundException(`Incident avec l'ID ${id} non trouvé`);
+        }
+
+        return incident;
+    }
 
     async declarerIncident(clientId: string, createDto: CreateIncidentDto): Promise<Incident> {
         const nouvelIncident = new this.incidentModel({

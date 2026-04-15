@@ -1,4 +1,20 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateIncidentDto } from './create-incident.dto';
+import { IsString, IsEnum, IsOptional, IsArray } from 'class-validator';
+import { TypeCriticite } from '../schemas/incident.schema';
 
-export class UpdateIncidentDto extends PartialType(CreateIncidentDto) {}
+export class UpdateIncidentDto {
+    @IsOptional()
+    @IsString()
+    sujet?: string;
+
+    @IsOptional()
+    @IsString()
+    description?: string;
+
+    @IsOptional()
+    @IsEnum(TypeCriticite)
+    criticite?: TypeCriticite;
+
+    @IsOptional()
+    @IsArray()
+    fichiers?: any[];
+}
