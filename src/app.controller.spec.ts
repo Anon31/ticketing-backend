@@ -1,22 +1,38 @@
+import { UsersController } from './modules/users/users.controller';
+import { UsersService } from './modules/users/users.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
-describe('AppController', () => {
-  let appController: AppController;
+// 1. Création d'un "Mock" du Service pour isoler totalement le Contrôleur
+class MockUsersService {
+    // On simule les méthodes potentiellement appelées par les routes du contrôleur
+    create = jest.fn().mockResolvedValue({});
+    findAll = jest.fn().mockResolvedValue([]);
+    findOne = jest.fn().mockResolvedValue({});
+    findByEmail = jest.fn().mockResolvedValue({});
+    update = jest.fn().mockResolvedValue({});
+    remove = jest.fn().mockResolvedValue({});
+}
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
+describe('UsersController', () => {
+    let controller: UsersController;
 
-    appController = app.get<AppController>(AppController);
-  });
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            controllers: [UsersController],
+            providers: [
+                // 2. On indique à NestJS d'utiliser notre Faux Service au lieu du vrai
+                {
+                    provide: UsersService,
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+                    useClass: MockUsersService,
+                },
+            ],
+        }).compile();
+
+        controller = module.get<UsersController>(UsersController);
     });
-  });
+
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 });
