@@ -37,5 +37,6 @@ export class AuthService {
         // Délégation au UsersService selon le principe SRP
         const user = await this.usersService.create(registerDto);
         return this.login({ email: user.email, password: registerDto.password });
+        console.log("test");
     }
 }
